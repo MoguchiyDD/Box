@@ -35,6 +35,7 @@ class ConvertFromExcelToJSON:
         schema = "schema"
         getData = "getData"
         load = "load"
+        getDataAndLoad = "getDataAndLoad"
         close = "close"
 
     def __init__(
@@ -71,6 +72,7 @@ class ConvertFromExcelToJSON:
         - «**schema**» : Opening a SCHEMA (JSON file)
         - «**getData**» : Get data from an EXCEL file
         - «**load**» : Write data via schema to a new JSON file
+        - «**getDataAndLoad**» : Running the «getData» and «load» commands
         - «**close**» : Closing an EXCEL file
 
         RETURN: the commands «**open**», «**sheet**» and «**getData**» have
@@ -90,6 +92,9 @@ class ConvertFromExcelToJSON:
             self.__get_data__()
             return self.data_for_save
         elif type is self.Commands.load:
+            self.__save_from_load__()
+        elif type is self.Commands.getDataAndLoad:
+            self.__get_data__()
             self.__save_from_load__()
         elif type is self.Commands.close:
             self.__exit__()

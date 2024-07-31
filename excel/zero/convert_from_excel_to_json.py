@@ -9,8 +9,10 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils import get_column_letter, coordinate_to_tuple
 
-from json import load
+from json import load, dump
 from time import sleep
+
+from os import path, remove
 
 
 class ConvertFromExcelToJSON:
@@ -20,6 +22,7 @@ class ConvertFromExcelToJSON:
     PARAMETERS:
     - **filepath** : an EXCEL file
     - **json_schema** : a JSON SCHEMA file
+    - **result_filename_for_json** : a file name for final JSON file
 
     FUNCTIONS:
     - **cmd**(type: Commands, sheet: int = 0) -> Workbook | Worksheet |
@@ -31,11 +34,18 @@ class ConvertFromExcelToJSON:
         sheet = "sheet"
         schema = "schema"
         getData = "getData"
+        load = "load"
         close = "close"
 
-    def __init__(self, filepath: str, json_schema: str) -> None:
+    def __init__(
+        self,
+        filepath: str,
+        json_schema: str,
+        result_filename_for_json: str = "result-excel"
+    ) -> None:
         self.filepath: str = filepath
         self.schema: str = json_schema
+        self.result_filename_for_json: str = result_filename_for_json
         self.data_schema: dict = {}
         self.data_for_save: list = []
         self.workbook: None | Workbook = None
@@ -60,6 +70,7 @@ class ConvertFromExcelToJSON:
         (default 1st)
         - «**schema**» : Opening a SCHEMA (JSON file)
         - «**getData**» : Get data from an EXCEL file
+        - «**load**» : Write data via schema to a new JSON file
         - «**close**» : Closing an EXCEL file
 
         RETURN: the commands «**open**», «**sheet**» and «**getData**» have
@@ -78,6 +89,8 @@ class ConvertFromExcelToJSON:
         elif type is self.Commands.getData:
             self.__get_data__()
             return self.data_for_save
+        elif type is self.Commands.load:
+            self.__save_from_load__()
         elif type is self.Commands.close:
             self.__exit__()
         
@@ -199,6 +212,146 @@ class ConvertFromExcelToJSON:
             else:
                 count += 1
             sleep(0.01)
+
+    def __save_one_object__(self, index: int) -> dict:
+        """
+        Save 1 complete line to a temporary variable
+        with data and exceptions \\
+        **Launch via the «load» command (inside)**
+
+        PARAMETERS:
+        - **index** : Index for already extracted data from EXCEL file
+
+        RETURN: {"except": list, "data": dictionary}
+        """
+
+        def get_field_value(
+            dct: self.data_for_save
+        ) -> str | int | float | None:
+            """
+            Gets data from 1 field
+
+            PARAMETERS:
+            - **dct** : Data from the extracted EXCEL file
+
+            RETURN: NOTHING or VALUE
+            """
+
+            try:
+                key = list(dct[index].keys())[0]
+                data_key = list(dct[index][key].keys())[0]
+
+                field = dct[index][key][data_key]
+                del dct[index][key][data_key]
+
+                field = {
+                    "message": True,
+                    "result": field if field != "#DIV/0!" else 0
+                }
+                if "".join(filter(str.isalpha, data_key)) in fields_percentage:
+                    field["result"] *= 100
+                return field
+            except IndexError or KeyError or TypeError or AttributeError or Exception:
+                field = {"message": False}
+                return field
+
+        fields_percentage: list[str] | None = [
+            self.data_schema["fields_percentage"]
+            if self.data_schema["fields_percentage"] else []
+        ][0]
+        save: dict = self.data_schema["save"]
+
+        result: dict = {"except": [], "data": {}}
+        result_time_for_except: dict = {}
+        is_except: list | None = []
+
+        for save_type, save_key in save.items():
+            if save_key:  # List with keys
+                result_time_for_data = {}
+                for sk in save_key:
+                    field = get_field_value(self.data_for_save)
+                    if field["message"]:
+                        result_time_for_data[sk] = field["result"]
+                    else:
+                        is_except.append(sk)
+                        result_time_for_except[save_type] = is_except
+                    sleep(0.01)
+                result["data"][save_type] = result_time_for_data
+                sleep(0.01)
+            else:  # None
+                field = get_field_value(self.data_for_save)
+                if field["message"]:
+                    result["data"][save_type] = field["result"]
+                else:
+                    is_except = None
+                    result_time_for_except[save_type] = is_except
+            sleep(0.01)
+
+        # Keys left from JSON
+        if len(result_time_for_except) >= 1:
+            result["except"].append(result_time_for_except)
+            result_time_for_except, is_except = {}, []
+
+        return result
+
+    def __save_from_load__(self) -> None:
+        """
+        Starts getting data from each record and then saves it
+        to a JSON file \\
+        **Launch via the «load» command**
+        """
+
+        result: list[dict] = [{"except": []}]
+        len_data_for_save: int = len(self.data_for_save)
+        for index in range(len_data_for_save):  # For rows
+            # line = list(self.data_for_save[index].keys())[0]
+            # print(f"Line No.{ line } has begun processing")
+            box = self.__save_one_object__(index)
+            result.append(box["data"])
+            result[0]["except"] = box["except"]
+            sleep(0.01)
+
+        if len(self.data_for_save) >= 1:  # Keys left from Excel
+            total: dict = {}
+            str_key: str = ""
+
+            for data in self.data_for_save:
+                for key, value in data.items():
+                    for k, _ in value.items():
+                        str_key += " " + "".join(filter(str.isalpha, k))
+                        sleep(0.01)
+                    if len(str_key) >= 1:
+                        total[key] = str_key.strip()
+                        str_key = ""
+                    sleep(0.01)
+                sleep(0.01)
+            if len(total) >= 1:
+                result[0]["except"].append(total)
+
+        # Except (if has)
+        filename: str = f"{ self.result_filename_for_json }"
+        filename += f"-except-{ self.sheet }.json"
+        if len(result[0]["except"]) >= 1:
+            with open(filename, "w") as file:
+                dump(result[0], file, indent=2, ensure_ascii=False)
+
+            # text = "\nDuring processing, it was found that the number of "
+            # text += "Excel fields does not match those required for JSON. \n"
+            # text += f"More details are in the file '{ filename }'\n"
+            # print(text)
+        else:
+            if path.exists(filename):
+                remove(filename)
+                # text = "\nThe number of fields in Excel and JSON are equal. "
+                # text += f"The old file '{ filename }' has been deleted.\n"
+                # print(text)
+
+        # Save
+        filename: str = f"{ self.result_filename_for_json }"
+        filename += f"-{ self.sheet }.json"
+        with open(filename, "w") as file:
+            dump(result[1:], file, indent=2, ensure_ascii=False)
+        # print(f"The file is saved. File name '{ filename }'")
 
     def __exit__(self) -> None:
         """

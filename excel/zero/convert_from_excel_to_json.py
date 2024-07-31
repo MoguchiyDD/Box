@@ -28,7 +28,7 @@ class ConvertFromExcelToJSON:
         self.filepath: str = filepath
         self.workbook: None | Workbook = None
 
-    def cmd(self, type: Commands) -> Workbook:
+    def cmd(self, type: Commands) -> Workbook | None:
         """
         Running a class via available commands
 

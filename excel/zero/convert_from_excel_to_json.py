@@ -8,6 +8,8 @@ from enum import Enum
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
+from json import load
+
 
 class ConvertFromExcelToJSON:
     """
@@ -15,6 +17,7 @@ class ConvertFromExcelToJSON:
 
     PARAMETERS:
     - **filepath** : an EXCEL file
+    - **json_schema** : a JSON SCHEMA file
 
     FUNCTIONS:
     - **cmd**(type: Commands) -> Workbook : Running a class via available
@@ -24,10 +27,12 @@ class ConvertFromExcelToJSON:
     class Commands(Enum):
         open = "open"
         sheet = "sheet"
+        schema = "schema"
         close = "close"
 
-    def __init__(self, filepath: str) -> None:
+    def __init__(self, filepath: str, json_schema: str) -> None:
         self.filepath: str = filepath
+        self.schema: str = json_schema
         self.workbook: None | Workbook = None
         self.worksheet: None | Worksheet = None
         self.sheet: int = 0
@@ -48,6 +53,7 @@ class ConvertFromExcelToJSON:
         - «**open**» : Opening an EXCEL file
         - «**sheet**» : Taking a sheet from an EXCEL file for processing
         (default 1st)
+        - «**schema**» : Opening a SCHEMA (JSON file)
         - «**close**» : Closing an EXCEL file
 
         RETURN: the commands «**open**» and «**sheet**»have data return,
@@ -61,6 +67,8 @@ class ConvertFromExcelToJSON:
             self.sheet = sheet
             self.__sheet__()
             return self.worksheet
+        elif type is self.Commands.schema:
+            self.__schema__()
         elif type is self.Commands.close:
             self.__exit__()
         
@@ -81,6 +89,15 @@ class ConvertFromExcelToJSON:
         """
 
         self.worksheet: Worksheet = self.workbook.worksheets[self.sheet]
+
+    def __schema__(self) -> None:
+        """
+        Opening a SCHEMA (JSON file) \\
+        **Launch via the «schema» command**
+        """
+
+        with open(self.schema, "r") as schema:
+            self.data_schema: dict = load(schema)
 
     def __exit__(self) -> None:
         """

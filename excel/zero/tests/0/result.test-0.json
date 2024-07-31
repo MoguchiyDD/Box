@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Title #1",
+    "numbers": {
+      "one": 1,
+      "two": 2
+    },
+    "percentage": 50.0,
+    "summa": 3
+  },
+  {
+    "name": "Title #1",
+    "numbers": {
+      "one": 1,
+      "two": 3
+    },
+    "percentage": 66.6666666666667,
+    "summa": 5
+  },
+  {
+    "name": "Title #3",
+    "numbers": {
+      "one": 4,
+      "two": 5
+    },
+    "percentage": 80.0,
+    "summa": 9
+  },
+  {
+    "name": "Title #5",
+    "numbers": {
+      "one": 6,
+      "two": 7
+    },
+    "percentage": 85.7142857142857,
+    "summa": 13
+  },
+  {
+    "name": "Title #7",
+    "numbers": {
+      "one": 8,
+      "two": 9
+    },
+    "percentage": 88.8888888888889,
+    "summa": 17
+  }
+]

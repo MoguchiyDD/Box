@@ -22,6 +22,7 @@ class ConvertFromExcelToJSON:
 
     class Commands(Enum):
         open = "open"
+        close = "close"
 
     def __init__(self, filepath: str) -> None:
         self.filepath: str = filepath
@@ -36,6 +37,7 @@ class ConvertFromExcelToJSON:
 
         COMMANDS:
         - «**open**» : Opening an EXCEL file
+        - «**close**» : Closing an EXCEL file
 
         RETURN: the commands «**open**» have data return, and the rest nothing
         """
@@ -43,6 +45,8 @@ class ConvertFromExcelToJSON:
         if type is self.Commands.open:
             self.__enter__()
             return self.workbook
+        elif type is self.Commands.close:
+            self.__exit__()
         
         return None
 
@@ -53,3 +57,12 @@ class ConvertFromExcelToJSON:
         """
 
         self.workbook: Workbook = load_workbook(self.filepath, data_only=True)
+
+    def __exit__(self) -> None:
+        """
+        Closing an EXCEL file \\
+        **Launch via the «close» command**
+        """
+
+        if self.workbook:
+            self.workbook.close()

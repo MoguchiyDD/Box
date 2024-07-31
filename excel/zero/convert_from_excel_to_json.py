@@ -6,6 +6,7 @@
 from enum import Enum
 
 from openpyxl import Workbook, load_workbook
+from openpyxl.worksheet.worksheet import Worksheet
 
 
 class ConvertFromExcelToJSON:
@@ -22,29 +23,44 @@ class ConvertFromExcelToJSON:
 
     class Commands(Enum):
         open = "open"
+        sheet = "sheet"
         close = "close"
 
     def __init__(self, filepath: str) -> None:
         self.filepath: str = filepath
         self.workbook: None | Workbook = None
+        self.worksheet: None | Worksheet = None
+        self.sheet: int = 0
 
-    def cmd(self, type: Commands) -> Workbook | None:
+    def cmd(
+        self,
+        type: Commands,
+        sheet: int = 0
+    ) -> Workbook | Worksheet | None:
         """
         Running a class via available commands
 
         PARAMETERS:
         - **type** : Variable from the **Command** class
+        - **sheet** : Opening sheet number from an EXCEL file
 
         COMMANDS:
         - «**open**» : Opening an EXCEL file
+        - «**sheet**» : Taking a sheet from an EXCEL file for processing
+        (default 1st)
         - «**close**» : Closing an EXCEL file
 
-        RETURN: the commands «**open**» have data return, and the rest nothing
+        RETURN: the commands «**open**» and «**sheet**»have data return,
+        and the rest nothing
         """
 
         if type is self.Commands.open:
             self.__enter__()
             return self.workbook
+        elif type is self.Commands.sheet:
+            self.sheet = sheet
+            self.__sheet__()
+            return self.worksheet
         elif type is self.Commands.close:
             self.__exit__()
         
@@ -57,6 +73,14 @@ class ConvertFromExcelToJSON:
         """
 
         self.workbook: Workbook = load_workbook(self.filepath, data_only=True)
+
+    def __sheet__(self) -> None:
+        """
+        Taking a sheet from an EXCEL file for processing (default 1st) \\
+        **Launch via the «sheet» command**
+        """
+
+        self.worksheet: Worksheet = self.workbook.worksheets[self.sheet]
 
     def __exit__(self) -> None:
         """

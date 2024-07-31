@@ -1,0 +1,11 @@
+{
+  "except": [
+    {
+      "numbers": [
+        "two"
+      ],
+      "percentage": null,
+      "summa": null
+    }
+  ]
+}

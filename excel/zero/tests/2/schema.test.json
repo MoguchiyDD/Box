@@ -1,0 +1,15 @@
+{
+    "rows_to": 2,
+    "rows_from": 6,
+    "rows_except": ["5"],
+    "fields_to": "A",
+    "fields_from": "B",
+    "fields_except": ["D"],
+    "fields_percentage": ["E"],
+    "save": {
+        "name": null,
+        "numbers": ["one", "two"],
+        "percentage": null,
+        "summa": null
+    }
+}

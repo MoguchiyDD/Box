@@ -5,11 +5,11 @@ The «**ConvertFromExcelToJSON**» class
 ```bash
 # Schema for reading data from EXCEL and saving in JSON format
 {
-  "rows_to": integer,  # Beginning to read rows
-  "rows_from": integer,  # End of reading rows (inclusive)
+  "rows_from": integer,  # Beginning to read rows
+  "rows_to": integer,  # End of reading rows (inclusive)
   "rows_except": integers array or NULL,  # Which rows not to take
-  "fields_to": character,  # Beginning to read columns
-  "fields_from": character,  # End of reading columns (inclusive)
+  "fields_from": character,  # Beginning to read columns
+  "fields_to": character,  # End of reading columns (inclusive)
   "fields_except": characters array or NULL,  # Which columns not to take
   "fields_percentage": characters array or NULL,  # Columns to calculate percentage
   "save": {  # Diagram of how to save data in JSON format

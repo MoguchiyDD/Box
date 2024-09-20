@@ -1,9 +1,9 @@
 {
-    "rows_to": 2,
-    "rows_from": 6,
+    "rows_from": 2,
+    "rows_to": 6,
     "rows_except": ["5"],
-    "fields_to": "A",
-    "fields_from": "F",
+    "fields_from": "A",
+    "fields_to": "F",
     "fields_except": ["D"],
     "fields_percentage": ["E"],
     "save": {

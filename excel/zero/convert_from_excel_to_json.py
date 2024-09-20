@@ -164,11 +164,11 @@ class ConvertFromExcelToJSON:
             exit(-1)
 
         # Read Schema
-        rows_to: int = self.data_schema["rows_to"]
         rows_from: int = self.data_schema["rows_from"]
+        rows_to: int = self.data_schema["rows_to"]
         rows_except: list[int] | None = self.data_schema["rows_except"]
-        fields_to: str = self.data_schema["fields_to"]
         fields_from: str = self.data_schema["fields_from"]
+        fields_to: str = self.data_schema["fields_to"]
         fields_except: list[str] | None = [
             self.data_schema["fields_except"]
             if self.data_schema["fields_except"] else []
@@ -178,12 +178,12 @@ class ConvertFromExcelToJSON:
         is_loop: bool = True
         stop_count: int = 1
         count: int = 1
-        cur_row: int = rows_to
+        cur_row: int = rows_from
         fields_data: dict = {}
 
         while is_loop:  # for 'field_to'
             col_letter: str = get_column_letter(count)
-            if col_letter == fields_to:
+            if col_letter == fields_from:
                 is_loop = False
                 stop_count, count = count, stop_count
             else:
@@ -201,7 +201,7 @@ class ConvertFromExcelToJSON:
                     field = f"{ col_letter }{ is_merge_field[0] }"
                 fields_data[field] = self.worksheet[field].value
 
-            if col_letter == fields_from:  # Finish work for Row
+            if col_letter == fields_to:  # Finish work for Row
                 self.data_for_save.append({cur_row: fields_data})
                 fields_data = {}
                 cur_row += 1
@@ -212,7 +212,7 @@ class ConvertFromExcelToJSON:
 
                 count = stop_count
 
-                if cur_row == (rows_from + 1):
+                if cur_row == (rows_to + 1):
                     is_loop = False
             else:
                 count += 1

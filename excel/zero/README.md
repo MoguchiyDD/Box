@@ -1,6 +1,8 @@
 # Convert from EXCEL to JSON through schema
 The «**ConvertFromExcelToJSON**» class
 
+![](result.gif)
+
 ## Schema
 ```bash
 # Schema for reading data from EXCEL and saving in JSON format
